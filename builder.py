@@ -5,28 +5,34 @@ import shutil
 
 class MessengerBuilder(object):
     """docstring for MessengerBuilder"""
-    def __init__(self, filepath, zipout):
+    def __init__(self, _json, port):
         super(MessengerBuilder, self).__init__()
+        self.data = _json
+        self.port = port
         self.cwd = os.getcwd()
-        self.tmp = os.path.join(self.cwd, 'tmp')
+        self.tmp = os.path.join(self.cwd, 'store', port)
+        print('self.tmp', self.tmp)
         self.i18n = os.path.join(self.tmp, 'bin', 'i18n', 'locales')
         self.api = os.path.join(self.tmp, 'api')
         self.defaults = os.path.join(self.tmp, 'bin', 'io', 'in.js')
         self.render = os.path.join(self.tmp, 'bin', 'io', 'render.js')
-        self.filepath = filepath
-        self.zipout = zipout
 
     def build(self):
-        self.__cleanup()
-        self.__file_to_json()
-        self.__clone_repo()
-        self.__write_dot_env()
-        self.__build_i18n_en()
-        self.__write_i18n_en()
-        self.__write_json_to_template()
-        defaults = ['greeting', 'fallback', 'welcome']
-        for default in defaults:
-            self.__template_default(default)
+        try:
+            self.__cleanup()
+            # self.__file_to_json()
+            self.__clone_repo()
+            self.__write_dot_env()
+            self.__build_i18n_en()
+            self.__write_i18n_en()
+            self.__write_json_to_template()
+            defaults = ['greeting', 'fallback', 'welcome']
+            for default in defaults:
+                self.__template_default(default)
+            return 0
+        except Exception as e:
+            print(e)
+            return 1
 
     def __build_i18n_en(self):
         """generate all template text in i18n"""
@@ -65,7 +71,7 @@ class MessengerBuilder(object):
         """pull project skeleton"""
         repo = git.Repo.clone_from(
             'https://github.com/Cologne-Dog/messenger-commerce-bot.git',
-            './tmp',
+            self.tmp,
             branch='builder'
         )
 
@@ -205,9 +211,9 @@ class MessengerBuilder(object):
         f.write('PAGE_ACCESS_TOKEN=%s\n' % self.data['configs']['pageToken'])
         f.write('APP_SECRET=%s\n' % self.data['configs']['secret'])
         f.write('VERIFY_TOKEN=%s\n' % self.data['configs']['verifyToken'])
-        f.write('APP_URL=%s\n' % 'https://foo.com')
-        f.write('SHOP_URL=%s\n' % self.data['configs']['webURL'])
-        f.write('PORT=%s\n' % 3000)
+        f.write('WEB_URLS="%s"\n' % ','.join(self.data['configs']['webURLs']))
+        f.write('APP_URL=https://%s.messengerup.com\n' % self.port)
+        f.write('PORT=%s\n' % self.port)
         f.close()
 
     def __write_i18n_en(self):

@@ -1,34 +1,50 @@
 from builder import MessengerBuilder
+from exporter import Export
 
-import click
+import json
 import os
+import random
 import re
 
-@click.command()
-@click.option(
-	'--filepath',
-	prompt='What\'s the path to the JSON file?', 
-	help='JSON file path.')
-@click.option(
-	'--zipout',
-	default='y',
-	prompt='Would you like to zip the output? (y/N)',
-	help='Whether or not to zip output.')
-def start(filepath, zipout):
+regex = re.compile('.*?\.zip')
+cwd = os.getcwd()
+
+def _default(name):
+    name = name.replace(' ', '')
+    if name == 'f':
+        name = 'MessengerBuilder{}.zip'.format(
+            str(random.randrange(99999)))
+    if not regex.match(name):
+        name += '.zip'
+
+    return name
+
+def start():
     """Entry point to builder, get JSON and start building!"""
     try:
-    	if not os.path.exists(filepath):
-    		raise FileNotFoundError('Invalid JSON file path, please try again.')
-    	if not isinstance(zipout, str):
-    		raise TypeError('Expecting "yes" or "no" input for "zipout" option.')
-    	zipout = zipout.lower()
-    	match = re.search('(y|n)[e,o]?', zipout)
-    	if not match:
-    		raise ValueError('Expecting "yes" or "no" input for "zipout" option.')
-    	mb = MessengerBuilder(filepath, zipout)
-    	mb.build()
+        with open('./store/messenger.json') as json_file:
+            data = json.load(json_file)
+            if not data:
+                raise ValueError('missing messenger JSON from builder')
+            if not os.environ['PORT']:
+                raise ValueError('missing PORT number in ENV')
+            port = os.environ['PORT']
+            out = _default(port)
+            mb = MessengerBuilder(data, port)
+            err = mb.build()
+            print(err)
+            if err:
+                raise SystemError('Build failed')
+            exporter = Export(out, cwd, port)
+            err = exporter.config()
+            if err:
+                raise SystemError('Build compression failed')
+            print('Ok')
+            return 0
+
     except Exception as e:
-    	raise e
+        print(e)
+        raise e
 
 if __name__ == '__main__':
     start()
