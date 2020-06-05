@@ -73,7 +73,7 @@ class MessengerBuilder(object):
         repo = git.Repo.clone_from(
             'https://github.com/Cologne-Dog/messenger-commerce-bot.git',
             self.tmp,
-            branch='builder'
+            branch='master'
         )
 
     def __file_to_json(self):
@@ -118,7 +118,7 @@ class MessengerBuilder(object):
         elements = view['elements']
         options = view['options']
         res = """
-    let response = [
+    var response = [
         """
         res += self.__template_elements(elements, name)
         res += self.__template_options(options, name)
@@ -134,19 +134,25 @@ class MessengerBuilder(object):
 
     def __template_render(self):
         """all routes / all views"""
-        delimiter = '%$$%'.format(name)
+        delimiter = '%$$%'
+        res = ''
         for name in self.data['views']:
+            print('build render {} -- '.format(name) * 3)
+            res += """
+        case '{}':
+            """.format(name)
+            res += """
+            response = [
+            """
             view = self.data['views'][name]
             elements = view['elements']
             options = view['options']
-            res = """
-    let response = [
-        """
-        res += self.__template_elements(elements, name)
-        res += self.__template_options(options, name)
-        res += """
-    ]
+            res += self.__template_elements(elements, name)
+            res += self.__template_options(options, name)
+            res += """
+            ]
             """
+
         with open(self.render, 'r') as file:
             data = file.read().replace(delimiter, res)
             os.remove(self.render)
@@ -162,32 +168,32 @@ class MessengerBuilder(object):
                 )
             if view['type'] == 'text':
                 res += """
-        API.genText(
-            i18n.__("{}")
-        ),
+            API.genText(
+                i18n.__("{}")
+            ),
                 """.format(self.i18n_en[key])
             else:
                 title = '{}-{}'.format(key, 'title')
                 subtitle = '{}-{}'.format(key, 'subtitle')
                 if view['type'] == 'photo':
                     res += """
-        API.genImageTemplate(
-            "{}",
-            i18n.__("{}"),
-            i18n.__("{}")
-        ),
+            API.genImageTemplate(
+                "{}",
+                i18n.__("{}"),
+                i18n.__("{}")
+            ),
                     """.format(
                         view['value']['image'],
                         title,
                         subtitle)
                 elif view['type'] == 'web':
                     res += """
-        API.genGenericTemplate(
-          "{}",
-          i18n.__("{}"),
-          i18n.__("{}"),
-          API.genWebButton({})
-        ),
+            API.genGenericTemplate(
+              "{}",
+              i18n.__("{}"),
+              i18n.__("{}"),
+              API.genWebButton({})
+            ),
                     """.format(
                         view['value']['image'],
                         title,
