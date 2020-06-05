@@ -29,6 +29,7 @@ class MessengerBuilder(object):
             defaults = ['greeting', 'fallback', 'welcome']
             for default in defaults:
                 self.__template_default(default)
+            self.__template_render()
             return 0
         except Exception as e:
             print(e)
@@ -131,6 +132,27 @@ class MessengerBuilder(object):
             f.write(data)
             f.close()
 
+    def __template_render(self):
+        """all routes / all views"""
+        delimiter = '%$$%'.format(name)
+        for name in self.data['views']:
+            view = self.data['views'][name]
+            elements = view['elements']
+            options = view['options']
+            res = """
+    let response = [
+        """
+        res += self.__template_elements(elements, name)
+        res += self.__template_options(options, name)
+        res += """
+    ]
+            """
+        with open(self.render, 'r') as file:
+            data = file.read().replace(delimiter, res)
+            os.remove(self.render)
+            f = open(self.render, 'w')
+            f.write(data)
+            f.close()
 
     def __template_elements(self, views, name):
         res = ''
