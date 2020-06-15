@@ -10,5 +10,6 @@ This requires a client interface or scheduled task that instructs the creation o
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
+This project is licensed under the [Creative Commons Attribution-NonCommercial 4.0 International License](LICENSE.md) - see the [LICENSE.md](LICENSE.md) file for details.
 
+<a href="https://creativecommons.org/licenses/by-nc/4.0/" target="__blank"><img title="Creative Commons Attribution-NonCommercial 4.0 International License" src="license.png" width="150" /></a>
