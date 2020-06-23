@@ -171,7 +171,7 @@ class MessengerBuilder(object):
             API.genText(
                 i18n.__("{}")
             ),
-                """.format(self.i18n_en[key])
+                """.format(key)
             else:
                 title = '{}-{}'.format(key, 'title')
                 subtitle = '{}-{}'.format(key, 'subtitle')
