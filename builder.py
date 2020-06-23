@@ -192,7 +192,7 @@ class MessengerBuilder(object):
               "{}",
               i18n.__("{}"),
               i18n.__("{}"),
-              API.genWebButton({})
+              API.genWebButton("{}")
             ),
                     """.format(
                         view['value']['image'],
